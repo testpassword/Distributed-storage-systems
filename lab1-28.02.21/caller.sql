@@ -35,15 +35,55 @@ CREATE OR REPLACE PACKAGE BODY triggers_util AS
 END;
 /
 
+CREATE OR REPLACE FUNCTION is_schema_exist(sch IN VARCHAR2) RETURN BOOLEAN AS
+        accepted_schemas_count NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO accepted_schemas_count FROM dba_users WHERE username = sch;
+        IF accepted_schemas_count = 0 THEN RETURN FALSE;
+        ELSE RETURN TRUE;
+        END IF;
+    END;
+/
+
+CREATE OR REPLACE FUNCTION is_table_exist(tbl IN VARCHAR2) RETURN BOOLEAN AS
+    accepted_tables_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO accepted_tables_count FROM dba_tables WHERE table_name = tbl;
+    IF accepted_tables_count = 0 THEN RETURN FALSE;
+    ELSE RETURN TRUE;
+    END IF;
+END;
+/
+
+
 SET SERVEROUTPUT ON;
-ACCEPT t CHAR PROMPT 'Type table name: '
+SET FEEDBACK OFF;
+SET VERIFY OFF;
 ACCEPT s CHAR PROMPT 'Type scheme name: '
+ACCEPT t CHAR PROMPT 'Type table name: '
 DECLARE
     result_cursor SYS_REFCURSOR;
-    table_name VARCHAR2(32) := '&t';
     scheme_name VARCHAR2(32) := '&s';
+    table_name VARCHAR2(32) := '&t';
+    scheme_input_exception EXCEPTION;
+    table_input_exception EXCEPTION;
+    schema_didnt_exist_exception EXCEPTION;
+    table_didnt_exist_exception EXCEPTION;
 BEGIN
-    triggers_util.get_filtered(table_name, scheme_name, result_cursor);
-    triggers_util.print_format(result_cursor);
+    IF scheme_name IS NULL THEN RAISE scheme_input_exception; END IF;
+    IF table_name IS NULL THEN RAISE table_input_exception; END IF;
+    IF is_schema_exist(scheme_name) = TRUE THEN
+       IF is_table_exist(table_name) = TRUE THEN
+           triggers_util.get_filtered(table_name, scheme_name, result_cursor);
+           triggers_util.print_format(result_cursor);
+        ELSE RAISE table_didnt_exist_exception;
+        END IF;
+    ELSE RAISE schema_didnt_exist_exception;
+    END IF;
+EXCEPTION
+    WHEN scheme_input_exception THEN DBMS_OUTPUT.PUT_LINE('Typed schema name is empty');
+    WHEN table_input_exception THEN DBMS_OUTPUT.PUT_LINE('Typed table name is empty');
+    WHEN schema_didnt_exist_exception THEN DBMS_OUTPUT.PUT_LINE('Typed schema didnt exist in database');
+    WHEN table_didnt_exist_exception THEN DBMS_OUTPUT.PUT_LINE('Typed table didnt exist in database');
 END;
 /
