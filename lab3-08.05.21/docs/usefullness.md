@@ -11,3 +11,5 @@ STARTUP;
 - Удалить логи из отслеживаемых RMAN-ом: https://knowledge.exlibrisgroup.com/Aleph/Knowledge_Articles/Expected_archived_log_not_found%2C_lost_of_archived_log_compromises_recoverability
 
 - [Подготовка БД](prepare_db.sql) и [заполнение](filter.sql) выполняются один раз.
+
+- При первоначальном копировании нужно выполнять `recover database until cancel;`, в последующие разы `recover database;`
