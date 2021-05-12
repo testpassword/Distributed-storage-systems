@@ -8,7 +8,7 @@ function drop_db {
 }
 
 function set_envs {
-  echo "ЗАДАНИЕ ЗНАЧЕНИЙ НЕОБХОДИМЫХ ДЛЯ КОНФИГУРАЦИИ ПЕРЕМЕННЫХ ОКРУЖЕНИЯ"
+  echo "УСТАНОВКА ПЕРЕМЕННЫХ ОКРУЖЕНИЯ"
   export ORACLE_BASE=/u01/app/oracle
   export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/dbhome_1
   export ORACLE_SID=kulbako_saraev_p33112
@@ -54,22 +54,18 @@ function create_configs {
 script_dir=$(pwd)
 mount_dir=/u01/qvs94
 db_name=leftfish
+modes=("DROP" "EX_ONLY" "FULL")
+set_envs
 case ${1} in
-  "DROP")
+  ${modes[0]})
     drop_db
     ;;
-  "ENV")
-    set_envs
-    ;;
-  "EX_ONLY")
-    set_envs
+  ${modes[1]})
     create_dirs
     auth
     create_configs
     ;;
-  "FULL")
-    echo "СОЗДАНИЕ БАЗЫ ДАННЫХ"
-    set_envs
+  ${modes[2]})
     create_dirs
     auth
     create_configs
@@ -84,6 +80,10 @@ case ${1} in
     exit | sqlplus /nolog @view_creator.sql
     ;;
   *)
-    echo "РЕЖИМ НЕ ЗАДАН"
+    echo "РЕЖИМ НЕ ЗАДАН, БЫЛИ УСТАНОВЛЕНЫ ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ"
+    echo "РЕЖИМЫ:"
+    for t in ${modes[@]}; do
+      echo $t
+    done
     ;;
 esac
