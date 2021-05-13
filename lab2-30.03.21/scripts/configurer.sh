@@ -1,8 +1,12 @@
 # скрипт запускать командой `. configurer.sh` или `source configurer.sh` чтобы импорт переменных сработал (https://stackoverflow.com/questions/10781824/export-not-working-in-my-shell-script)
 
 function drop_db {
-  echo "УДАЛЕНИЕ БАЗЫ ДАННЫХ"
-  sqlplus /nolog <<< "SHUTDOWN ABORT; EXIT;"
+# отступы не менять здесь, bash-у не нравится!
+echo "УДАЛЕНИЕ БАЗЫ ДАННЫХ"
+sqlplus / as sysdba <<EOF
+SHUTDOWN ABORT; 
+EXIT;
+EOF
   rm -rf $mount_dir
   rm $ORACLE_HOME/dbs/*
 }
@@ -49,6 +53,7 @@ function create_configs {
   DB_RECOVERY_FILE_DEST_SIZE=20G
   DB_RECOVERY_FILE_DEST='$recovery_dir'
   " >> init$ORACLE_SID.ora    # создание файла инициализации экземпляра
+  cd $script_dir
 }
 
 script_dir=$(pwd)
@@ -70,7 +75,6 @@ case ${1} in
     auth
     create_configs
     echo "ЗАПУСК ЭКЗЕМПЛЯРА ORACLE"
-    cd $script_dir
     exit | sqlplus /nolog @mounter.sql
     echo "СОЗДАНИЕ НОВОЙ БАЗЫ ДАННЫХ"
     exit | sqlplus /nolog @db_creator.sql
