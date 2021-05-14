@@ -3,3 +3,4 @@ CREATE TABLE test(
     name VARCHAR2(20)
 );
 INSERT INTO test VALUES (1, 'lol');
+SELECT * FROM test;

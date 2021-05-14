@@ -2,9 +2,9 @@
 
 echo "СОЗДАНИЕ РЕЗЕРВНОЙ КОПИИ"
 rman target / << EOF                    # подключение к rman с помощью механизма аутентификации ОС
-SQL 'ALTER SYSTEM ARCHIVE LOG CURRENT';
-CONFIGURE CONTROLFILE AUTOBACKUP ON;
-BACKUP DATABASE PLUS ARCHIVELOG;      # создание полной резервной копии БД
+SQL 'ALTER SYSTEM ARCHIVE LOG CURRENT'; # принудительно получить последнюю версию журнала повторов
+CONFIGURE CONTROLFILE AUTOBACKUP ON;    # включить автоматическое копирование контрольного файла
+BACKUP DATABASE PLUS ARCHIVELOG;        # создание полной резервной копии БД
 EXIT;
 EOF
 
